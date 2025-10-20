@@ -59,5 +59,5 @@ A fully functional **AI-powered SaaS (Software-as-a-Service)** application that 
 
 ### 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/yourusername/ai-saas-platform.git
-cd ai-saas-platform
+git clone https://github.com/AarishEjaz/Happen.AI/tree/master
+
