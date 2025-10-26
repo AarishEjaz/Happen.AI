@@ -66,8 +66,5 @@ git clone https://github.com/yourusername/ai-saas-platform.git
 cd ai-saas-platform
 
 
-changing platform
-
-trying another change
 
 
