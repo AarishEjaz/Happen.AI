@@ -62,6 +62,6 @@ Built using the **PERN stack**, this project demonstrates how to build, deploy, 
 
 ### 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/yourusername/ai-saas-platform.git
+git clone https://github.com/AarishEjaz/Happen.AI/tree/master
 cd ai-saas-platform
 
