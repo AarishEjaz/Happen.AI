@@ -4,6 +4,8 @@ import sql from '../configs/db.js'
 import { clerkClient,clerkMiddleware, getAuth } from "@clerk/express";
 import { configDotenv } from "dotenv";
 import { response } from "express";
+import {v2 as cloudinary} from 'cloudinary'
+import axios from 'axios'
 
 // const openai = new OpenAI({
 //     apiKey: process.env.GEMINI_API_KEY
@@ -80,19 +82,19 @@ export const generateBlogTitle = async(req, res) =>{
     try{
         // console.log("testing 1")
         const {userId} =  getAuth(req)
-        const {prompt,publish} = req.body
+        const {prompt} = req.body
         const plan = req.plan
         const free_usage = req.free_usage
 
-        if(plan !=='premium'){
-            return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
+        if(plan !=='premium' && free_usage >= 10){
+            return res.json({success:false, message:'Limit reached. Upgrade to continue.'})
         }
 
 
         // console.log("testing 3")
           const response = await ai.models.generateContent({
               model: "gemini-2.0-flash",
-              contents: `${prompt}`,
+              contents: `Generate a blog title on the given prompt: ${prompt}`,
             });
 
 
@@ -127,51 +129,41 @@ export const generateBlogTitle = async(req, res) =>{
 // -------------------------------------------------------Generate Image-------------------------------------------------------
 export const generateImage = async(req, res) =>{
     try{
-        // console.log("testing 1")
+        console.log("testing 1")
         const {userId} =  getAuth(req)
-        const {prompt} = req.body
+        const {prompt,publish} = req.body
         const plan = req.plan
         const free_usage = req.free_usage
+        console.log(plan)
 
+        // checking the plan
         if(plan !=='premium'){
             return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
         }
 
-
-        // console.log("testing 3")
-
+        // clipdrop api part starts here
         const formData = new FormData()
         formData.append('prompt', prompt )
             
-        await axios.post('https://clipdrop-api.co/text-to-image/v1',formData, {
-            headers:{'x-api-key': YOUR_API_KEY,},
-            responseType: "arrayBuffer"
+        const {data} = await axios.post('https://clipdrop-api.co/text-to-image/v1',formData, {
+            headers:{'x-api-key': process.env.CLIPDROP_API_KEY,},
+            responseType: "arraybuffer"
         })
-        .then(response => response.arrayBuffer())
-        .then(buffer => {
-        // buffer here is a binary representation of the returned image
-        })
-          
 
-        await sql`INSERT INTO creations (user_id, prompt,content, type)
-        VALUES(${userId},${prompt}, ${content}, 'blog-title' )`
-
+        // console.log("testing 3")
+        const base64Image = `data:image/png;base64,${Buffer.from(data, 'binary').toString('base64')}`
         // console.log("testing 4")
-          console.log(userId)
-
-        if(plan !='premium'){
-            await clerkClient.users.updateUserMetadata(userId,{
-                privateMetadata:{
-                    free_usage: free_usage + 1
-                }
-            })
-        }
-
+        const {secure_url} = await cloudinary.uploader.upload(base64Image)
         // console.log("testing 5")
-        res.json({success:true, content})
+
+        //adding the content to database
+        await sql`INSERT INTO creations (user_id, prompt,content, type, publish)
+        VALUES(${userId},${prompt}, ${secure_url}, 'image', ${publish ?? false})`
+
+        res.json({success:true, content:secure_url})
 
     }catch(error){
-        console.log(error)
+        console.log(error.message)
         res.json({success:false, message:error.message})
     }
 }
