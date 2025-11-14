@@ -243,47 +243,47 @@ export const removeImageObject = async(req, res) =>{
     }
 }
 // ----------------------------------------------------------------------Resume review-------------------------------------------
-// export const resumeReview = async(req, res) =>{
-//     try{
-//         // console.log("testing 1")
-//         const {userId} =  getAuth(req)
-//         const resume = req.file
-//         const plan = req.plan
+export const resumeReview = async(req, res) =>{
+    try{
+        // console.log("testing 1")
+        const {userId} =  getAuth(req)
+        const resume = req.file
+        const plan = req.plan
 
 
-//         // checking the plan
-//         if(plan !=='premium'){
-//             return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
-//         }
+        // checking the plan
+        if(plan !=='premium'){
+            return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
+        }
 
-//         // console.log("testing 3")
-//         if(resume.size> 5*1024*1024){
-//             return res.json({success:false, message:'Resume file size exceeds allowed size (5MB)'})
-//         }
+        // console.log("testing 3")
+        if(resume.size> 5*1024*1024){
+            return res.json({success:false, message:'Resume file size exceeds allowed size (5MB)'})
+        }
 
-//         const dataBuffer = fs.readFileSync(resume.path)
-//         const pdfData = await pdf(dataBuffer)
+        const dataBuffer = fs.readFileSync(resume.path)
+        const pdfData = await pdf(dataBuffer)
 
-//         const prompt = `Review the following resume and provide constructive feedback on ots strengths, weaknesses, and areas for improvement. Resume 
-//         Content:\n\n${pdfData.text}`
+        const prompt = `Review the following resume and provide constructive feedback on ots strengths, weaknesses, and areas for improvement. Resume 
+        Content:\n\n${pdfData.text}`
 
-//         const response = await ai.models.generateContent({
-//           model: "gemini-2.0-flash",
-//           contents: `${prompt}`,
-//         });
+        const response = await ai.models.generateContent({
+          model: "gemini-2.0-flash",
+          contents: `${prompt}`,
+        });
 
-//         const content = response.text
+        const content = response.text
 
-//         // console.log("testing 5")
+        // console.log("testing 5")
 
-//         //adding the content to database
-//         await sql`INSERT INTO creations (user_id, prompt,content, type)
-//         VALUES(${userId},'Review the uploaded resume', ${content}, 'Resume-Review')`
+        //adding the content to database
+        await sql`INSERT INTO creations (user_id, prompt,content, type)
+        VALUES(${userId},'Review the uploaded resume', ${content}, 'Resume-Review')`
 
-//         res.json({success:true, content})
+        res.json({success:true, content})
 
-//     }catch(error){
-//         console.log(error.message)
-//         res.json({success:false, message:error.message})
-//     }
-// }
+    }catch(error){
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
