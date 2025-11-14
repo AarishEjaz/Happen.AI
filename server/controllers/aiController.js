@@ -207,41 +207,41 @@ export const removeImageBackground = async(req, res) =>{
 }
 
 // --------------------------------------------------------------------Remove image Object------------------------------------------------------------
-// export const removeImageObject = async(req, res) =>{
-//     try{
-//         // console.log("testing 1")
-//         const {userId} =  getAuth(req)
-//         const {object} = req.body()
-//         const {image} = req.file
-//         const plan = req.plan
+export const removeImageObject = async(req, res) =>{
+    try{
+        // console.log("testing 1")
+        const {userId} =  getAuth(req)
+        const {object} = req.body()
+        const {image} = req.file
+        const plan = req.plan
 
 
-//         // checking the plan
-//         if(plan !=='premium'){
-//             return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
-//         }
+        // checking the plan
+        if(plan !=='premium'){
+            return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
+        }
 
-//         // console.log("testing 3")
-//         const {public_id} = await cloudinary.uploader.upload(image.path)
+        // console.log("testing 3")
+        const {public_id} = await cloudinary.uploader.upload(image.path)
 
-//         const imageUrl = cloudinary.url(public_id,{
-//                             transformation:[{effect:`gen_remove:${object}`}],
-//                             resource_type:'image'
-//                         })
+        const imageUrl = cloudinary.url(public_id,{
+                            transformation:[{effect:`gen_remove:${object}`}],
+                            resource_type:'image'
+                        })
 
-//         // console.log("testing 5")
+        // console.log("testing 5")
 
-//         //adding the content to database
-//         await sql`INSERT INTO creations (user_id, prompt,content, type)
-//         VALUES(${userId},${`Removed ${object} from image`}, ${imageUrl}, 'image')`
+        //adding the content to database
+        await sql`INSERT INTO creations (user_id, prompt,content, type)
+        VALUES(${userId},${`Removed ${object} from image`}, ${imageUrl}, 'image')`
 
-//         res.json({success:true, content:imageUrl})
+        res.json({success:true, content:imageUrl})
 
-//     }catch(error){
-//         console.log(error.message)
-//         res.json({success:false, message:error.message})
-//     }
-// }
+    }catch(error){
+        console.log(error.message)
+        res.json({success:false, message:error.message})
+    }
+}
 // ----------------------------------------------------------------------Resume review-------------------------------------------
 // export const resumeReview = async(req, res) =>{
 //     try{
