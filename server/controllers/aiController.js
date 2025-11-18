@@ -136,9 +136,9 @@ export const generateImage = async(req, res) =>{
         console.log(plan)
 
         // checking the plan
-        if(plan !=='Premium'){
-            return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
-        }
+        // if(plan !=='Premium'){
+        //     return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
+        // }
 
         // clipdrop api part starts here
         const formData = new FormData()
