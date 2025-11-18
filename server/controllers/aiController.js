@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import { createRequire } from 'module'
+
 import { GoogleGenAI } from "@google/genai";
 import sql from '../configs/db.js'
 import { clerkClient,clerkMiddleware, getAuth } from "@clerk/express";
@@ -7,12 +9,7 @@ import { response } from "express";
 import {v2 as cloudinary} from 'cloudinary'
 import axios from 'axios'
 import fs from "fs"
-import pdf from 'pdf-parse/lib/pdf-parse.js'
-
-// const openai = new OpenAI({
-//     apiKey: process.env.GEMINI_API_KEY
-//     // baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
-// });
+import pdf from "pdf-parse-new"
 
 
 
@@ -139,7 +136,7 @@ export const generateImage = async(req, res) =>{
         console.log(plan)
 
         // checking the plan
-        if(plan !=='premium'){
+        if(plan !=='Premium'){
             return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
         }
 
@@ -175,7 +172,7 @@ export const removeImageBackground = async(req, res) =>{
         // console.log("testing 1")
         const {userId} =  getAuth(req)
         // const {prompt,publish} = req.body
-        const {image} = req.file
+        const image = req.file
         const plan = req.plan
         // const free_usage = req.free_usage
         // console.log(plan)
@@ -211,8 +208,8 @@ export const removeImageObject = async(req, res) =>{
     try{
         // console.log("testing 1")
         const {userId} =  getAuth(req)
-        const {object} = req.body()
-        const {image} = req.file
+        const {object} = req.body
+        const image = req.file
         const plan = req.plan
 
 
@@ -245,45 +242,44 @@ export const removeImageObject = async(req, res) =>{
 // ----------------------------------------------------------------------Resume review-------------------------------------------
 export const resumeReview = async(req, res) =>{
     try{
-        // console.log("testing 1")
-        const {userId} =  getAuth(req)
+        const { userId } = getAuth(req)
         const resume = req.file
         const plan = req.plan
-
-
-        // checking the plan
-        if(plan !=='premium'){
-            return res.json({success:false, message:'This feature is only available for premium subscriptions.'})
+        if (plan !== 'premium') {
+            return res.json({ success: false, message: 'This feature is only available for premium subscriptions.' })
         }
 
-        // console.log("testing 3")
-        if(resume.size> 5*1024*1024){
-            return res.json({success:false, message:'Resume file size exceeds allowed size (5MB)'})
+        if(resume.size>5*1024*1024){
+            return res.json({success:false, message:"Resume file size exceeds 5MB"})
         }
-
+        
         const dataBuffer = fs.readFileSync(resume.path)
-        const pdfData = await pdf(dataBuffer)
-
-        const prompt = `Review the following resume and provide constructive feedback on ots strengths, weaknesses, and areas for improvement. Resume 
-        Content:\n\n${pdfData.text}`
+        console.log("testing 1")
+        
+        // ✅ Use dynamic import approach
+        var pdfinfo 
+        pdf(dataBuffer).then(function(data){
+            pdfinfo = data
+        
+        })
+        
+        const prompt = `Review the following resume and provide constructive feedback on its strengths, weaknesses , and areas for inprovement. Resume Content: \n\n${pdfinfo} `
 
         const response = await ai.models.generateContent({
-          model: "gemini-2.0-flash",
-          contents: `${prompt}`,
+            model: "gemini-2.0-flash",
+            contents: `${prompt}`,
         });
 
         const content = response.text
 
-        // console.log("testing 5")
-
-        //adding the content to database
-        await sql`INSERT INTO creations (user_id, prompt,content, type)
-        VALUES(${userId},'Review the uploaded resume', ${content}, 'Resume-Review')`
+        await sql`INSERT INTO creations (user_id, prompt, content, type)
+        VALUES (${userId}, 'Review the uploaded resume',${content},'Resume-Review' )`
 
         res.json({success:true, content})
 
     }catch(error){
+        console.log("Error details:", error)
         console.log(error.message)
-        res.json({success:false, message:error.message})
+        res.json({success:false, message: error.message})
     }
 }
