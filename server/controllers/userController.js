@@ -17,7 +17,6 @@ export const getUserCreations = async(req, res) =>{
 
 export const getPublishedCreations = async(req, res) =>{
     try{
-        // const {userId} = getAuth(req)
         const creations = await sql`SELECT * FROM creations WHERE publish = true ORDER BY created_at DESC`
 
         res.json({success:true, creations})
@@ -34,9 +33,9 @@ export const toggleLikeCreation = async(req, res) =>{
         const {id} =req.body
 
 
-        const [creations] = await sql`SELECT * FROM creations WHERE id=${id} `
+        const [creation] = await sql`SELECT * FROM creations WHERE id=${id} `
 
-        if(!creations){
+        if(!creation){
             return res.json({success:false, message:"Creation not found"})
         }
 
@@ -53,8 +52,8 @@ export const toggleLikeCreation = async(req, res) =>{
             message = "Creation Liked"
         }
 
-        const formattedArray = `{${updatedLikes.json(',')}}`
-        await sql`UPDATE creations SET likes =${formattedArray}::text[] WEHRE id = ${id}`
+        const formattedArray = `{${updatedLikes.join(',')}}`
+        await sql`UPDATE creations SET likes =${formattedArray}::text[] WHERE id = ${id}`
 
         res.json({success:true, message})
 
